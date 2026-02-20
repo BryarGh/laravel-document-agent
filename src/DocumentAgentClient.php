@@ -87,6 +87,7 @@ class DocumentAgentClient
         return [
             'job_id' => $response['job_id'] ?? null,
             'status' => $response['status'] ?? null,
+            'deduped' => $response['deduped'] ?? false,
         ];
     }
 
@@ -139,7 +140,7 @@ class DocumentAgentClient
 
     private function get(string $path, bool $tolerate404 = false): array
     {
-        $req = $this->request()->get($path);
+        $req = $this->executeWithPortRetry(fn () => $this->request()->get($path));
 
         if ($req->successful()) {
             return $req->json();
@@ -155,7 +156,7 @@ class DocumentAgentClient
 
     private function post(string $path, array $payload, bool $expect202 = false): array
     {
-        $req = $this->request()->post($path, $payload);
+        $req = $this->executeWithPortRetry(fn () => $this->request()->post($path, $payload));
 
         if ($expect202 && $req->status() === 202) {
             return $req->json();
@@ -197,6 +198,24 @@ class DocumentAgentClient
         }
 
         throw new AgentUnavailableException('agent_unavailable');
+    }
+
+    private function executeWithPortRetry(callable $operation)
+    {
+        $retried = false;
+
+        while (true) {
+            try {
+                return $operation();
+            } catch (\Throwable $e) {
+                if ($retried) {
+                    throw $e;
+                }
+                // Clear cached port and retry once in case the agent restarted on a different port.
+                $this->detectedPort = null;
+                $retried = true;
+            }
+        }
     }
 
     private function throwForResponse(int $status, ?array $body = null): void
