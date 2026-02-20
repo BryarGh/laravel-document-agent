@@ -1,0 +1,7 @@
+/vendor/
+/composer.lock
+/node_modules/
+/public/vendor/
+/.idea/
+/.vscode/
+.DS_Store

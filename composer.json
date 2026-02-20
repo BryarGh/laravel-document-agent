@@ -1,0 +1,23 @@
+{
+  "name": "document-agent/laravel-document-agent",
+  "description": "Laravel integration package for the local document scanning/printing agent.",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.4",
+    "illuminate/support": "^10.0|^11.0|^12.0",
+    "illuminate/http": "^10.0|^11.0|^12.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "DocumentAgent\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "DocumentAgent\\DocumentAgentServiceProvider"
+      ]
+    }
+  }
+}
